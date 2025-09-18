@@ -3,17 +3,29 @@ import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db, { initializeDatabase} from "./db.ts";
+import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 8080;
 const JWT_SECRET = "your-secret-key"; // In production, use environment variable
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // Frontend URL
+  origin: "http://localhost:8080", // Frontend URL
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+app.use(express.static(path.join(__dirname, "../gemmie-spu-shop/dist")));
+
+app.get("/api/health", (req, res) => {
+  res.send("Backend API is running 🚀");
+});
 
 // JWT Authentication Middleware
 const authenticateToken = (req: any, res: any, next: any) => {
@@ -29,9 +41,13 @@ const authenticateToken = (req: any, res: any, next: any) => {
 
 // Initialize the database
 initializeDatabase().then(() => {
-  console.log("Database initialized!");
-  
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+  });
 });
+
+
+
 
 // Fetch all products
 app.get("/api/products", async (req, res) => {
@@ -44,6 +60,10 @@ app.get("/api/products", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
+
+app.use((req, res) => {
+  res.sendFile(path.join(__filename, "index.html"));
+}); 
 
 // Save an order
 app.post("/api/orders", async (req, res) => {
@@ -126,7 +146,7 @@ app.post("/api/auth/register", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: true, // Set to true in production with HTTPS
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -168,7 +188,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: true, // Set to true in production with HTTPS
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -203,7 +223,3 @@ app.post("/api/auth/logout", (req, res) => {
   res.json({ message: "Logged out successfully" });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
