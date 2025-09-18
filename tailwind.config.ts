@@ -47,6 +47,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // SPU Brand Colors
+        'spu-red': {
+          DEFAULT: "hsl(var(--spu-red))",
+          light: "hsl(var(--spu-red-light))",
+          dark: "hsl(var(--spu-red-dark))",
+        },
+        'spu-navy': {
+          DEFAULT: "hsl(var(--spu-navy))",
+          light: "hsl(var(--spu-navy-light))",
+        },
+        'spu-gold': "hsl(var(--spu-gold))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
