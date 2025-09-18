@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,10 @@ const Header = () => {
   const [cartItems, setCartItems] = useState(0);
 
   const navigationItems = [
-    { name: "Leisure Wear", href: "#leisure" },
-    { name: "Corporate Wear", href: "#corporate" },
-    { name: "Corporate Gifts", href: "#gifts" },
-    { name: "Stationery & Accessories", href: "#stationery" },
+    { name: "Leisure Wear", href: "/leisure-wear" },
+    { name: "Corporate Wear", href: "/corporate-wear" },
+    { name: "Corporate Gifts", href: "/corporate-gifts" },
+    { name: "Stationery & Accessories", href: "/stationery" },
   ];
 
   return (
@@ -22,7 +23,7 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">G</span>
               </div>
@@ -30,7 +31,7 @@ const Header = () => {
                 <h1 className="text-xl font-bold text-primary">Gemmie</h1>
                 <p className="text-xs text-muted-foreground">Merchandise</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Search Bar - Hidden on mobile */}
@@ -62,14 +63,16 @@ const Header = () => {
             </Button>
 
             {/* Cart */}
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              {cartItems > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary">
-                  {cartItems}
-                </Badge>
-              )}
-            </Button>
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {cartItems > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary">
+                    {cartItems}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
 
             {/* Mobile Menu */}
             <Sheet>
@@ -86,13 +89,13 @@ const Header = () => {
                   </div>
                   <div className="space-y-2">
                     {navigationItems.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.href}
                         className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -104,13 +107,13 @@ const Header = () => {
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex h-12 items-center space-x-8 border-t border-border/50">
           {navigationItems.map((item) => (
-            <a
+            <Link
               key={item.name}
-              href={item.href}
+              to={item.href}
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors hover:border-b-2 hover:border-primary py-3"
             >
               {item.name}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>

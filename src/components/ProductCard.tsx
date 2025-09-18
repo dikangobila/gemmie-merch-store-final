@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,9 +86,11 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         </p>
 
         {/* Product Name */}
-        <h3 className="font-semibold text-card-foreground line-clamp-2 group-hover:text-primary transition-colors">
-          {product.name}
-        </h3>
+        <Link to={`/product/${product.id}`}>
+          <h3 className="font-semibold text-card-foreground line-clamp-2 group-hover:text-primary transition-colors cursor-pointer">
+            {product.name}
+          </h3>
+        </Link>
 
         {/* Rating */}
         {product.rating && (
