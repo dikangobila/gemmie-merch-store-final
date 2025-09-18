@@ -14,6 +14,7 @@ const Header = () => {
     { name: "Corporate Wear", href: "/corporate-wear" },
     { name: "Corporate Gifts", href: "/corporate-gifts" },
     { name: "Stationery & Accessories", href: "/stationery" },
+    { name: "Sportswear & Activewear", href: "/sportswear" },
   ];
 
   return (

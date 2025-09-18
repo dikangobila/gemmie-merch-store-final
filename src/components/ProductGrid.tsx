@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Grid3X3, LayoutGrid } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+
 
 interface ProductGridProps {
   products: Product[];
@@ -15,6 +17,7 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { addToCart } = useCart();
 
   // Get unique categories
   const categories = ["all", ...Array.from(new Set(products.map(p => p.category)))];
@@ -37,6 +40,7 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
     });
 
   const handleAddToCart = (product: Product) => {
+    addToCart({ ...product, quantity: 1 });
     console.log("Added to cart:", product);
     // Here you would typically dispatch to a cart context or state
   };
@@ -55,6 +59,9 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
               from everyday apparel to corporate gifts and accessories.
             </p>
           </div>
+          
+
+
         )}
 
         {/* Filters and Controls */}
@@ -132,7 +139,7 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
             <div key={product.id} className="animate-fade-in">
               <ProductCard 
                 product={product} 
-                onAddToCart={handleAddToCart}
+                onAddToCart={() => handleAddToCart(product)}
               />
             </div>
           ))}

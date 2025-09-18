@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,43 +7,12 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  color?: string;
-}
+import { useCart } from "@/context/CartContext";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "SPU Polo Shirt - Red",
-      price: 299.99,
-      quantity: 2,
-      image: "/src/assets/products/polo-red.jpg",
-      color: "Red"
-    }
-  ]);
+  const { cartItems, updateQuantity, removeItem } = useCart();
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setCartItems(cartItems.filter(item => item.id !== id));
-    } else {
-      setCartItems(cartItems.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      ));
-    }
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
 

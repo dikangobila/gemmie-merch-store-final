@@ -21,6 +21,7 @@ const Footer = () => {
       "Corporate Wear", 
       "Corporate Gifts",
       "Stationery & Accessories",
+      "Sportswear & Activewear",
       "New Arrivals",
       "Sale Items"
     ],
