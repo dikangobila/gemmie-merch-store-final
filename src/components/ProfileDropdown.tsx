@@ -1,5 +1,6 @@
 import React from "react";
-import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { User } from "lucide-react";
@@ -8,7 +9,20 @@ const ProfileDropdown = () => {
   const { user, logout } = useAuth();
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex items-center space-x-2">
+        <Link to="/login">
+          <Button variant="ghost" size="sm">
+            Login
+          </Button>
+        </Link>
+        <Link to="/register">
+          <Button variant="default" size="sm">
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   return (

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ShoppingCart, Search, Menu, User, Heart } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/context/AuthContext";
+import ProfileDropdown from "@/components/ProfileDropdown";
 
 const Header = () => {
   const [cartItems, setCartItems] = useState(0);
@@ -59,9 +61,9 @@ const Header = () => {
             </Button>
 
             {/* Account */}
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <User className="h-5 w-5" />
-            </Button>
+            <div className="hidden sm:flex">
+              <ProfileDropdown />
+            </div>
 
             {/* Cart */}
             <Link to="/cart">
