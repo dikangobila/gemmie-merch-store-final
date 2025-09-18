@@ -48,19 +48,7 @@ export const initializeDatabase = async () => {
   console.log("Database initialized successfully!");
 };
 
-export const seedDatabase = async () => {
-  const database = await db;
 
-  await database.run(`
-    INSERT INTO products (name, price, category, image_url)
-    VALUES
-      ('T-Shirt', 19.99, 'leisure', 'tshirt.jpg'),
-      ('Hoodie', 39.99, 'leisure', 'hoodie.jpg'),
-      ('Notebook', 9.99, 'stationery', 'notebook.jpg');
-  `);
-
-  console.log("Sample data inserted!");
-};
 
 
 export default db;

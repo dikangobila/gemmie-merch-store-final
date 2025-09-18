@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import db, { initializeDatabase, seedDatabase } from "./db.ts";
+import db, { initializeDatabase} from "./db.ts";
 
 const app = express();
 const PORT = 8080;
@@ -12,7 +12,7 @@ app.use(express.json());
 // Initialize the database
 initializeDatabase().then(() => {
   console.log("Database initialized!");
-  seedDatabase(); // Optional: Seed the database with sample data
+  
 });
 
 // Fetch all products
@@ -31,18 +31,22 @@ app.get("/api/products", async (req, res) => {
 app.post("/api/orders", async (req, res) => {
   const { user_id, items, subtotal, shipping, total } = req.body;
 
+    console.log("Received order data:", req.body); // Log the incoming data
+
   try {
     const database = await db;
 
     // Insert the order
     const result = await database.run(
-      "INSERT INTO orders (user_id, subtotal, shipping, total) VALUES (?, ?, ?, ?)",
+      "INSERT INTO orders (user_id, subtotal, shipping, total, created_at) VALUES (?, ?, ?, ?, ?)",
       [user_id, subtotal, shipping, total]
     );
+    console.log("Order inserted:", result);
     const orderId = result.lastID;
 
     // Insert the order items
     for (const item of items) {
+      console.log("Inserting order item:", item);
       await database.run(
         "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
         [orderId, item.product_id, item.quantity, item.price]
