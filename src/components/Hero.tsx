@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Shield, Truck } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
+import herologo from "@/assets/headerlogo.png";
 
 const Hero = () => {
   return (
@@ -15,7 +15,7 @@ const Hero = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Star className="h-5 w-5 text-spu-gold" />
-                <span className="text-spu-gold font-medium">Official University Merchandise</span>
+                <span className="text-spu-gold font-medium">Official Sol Plaatje University Merchandise</span>
               </div>
               
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
@@ -41,11 +41,13 @@ const Hero = () => {
               </Link>
               
               <Button 
+                asChild
                 variant="outline" 
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                View Catalogue
+                className="border-white/30 text-black hover:bg-white/10">
+                <a href="C:\Users\Admin\Documents\Projects\gemmie-spu-shop\src\assets\Catalogue-Final.pdf" target="_blank" rel="noopener noreferrer">
+                  View Catalogue
+                </a>
               </Button>
             </div>
 
@@ -81,7 +83,7 @@ const Hero = () => {
           <div className="relative animate-slide-up">
             <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-elegant">
               <img 
-                src={heroImage} 
+                src={herologo} 
                 alt="Sol Plaatje University Merchandise" 
                 className="w-full h-full object-cover"
               />

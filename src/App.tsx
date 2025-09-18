@@ -11,6 +11,9 @@ import Sportswear from "./pages/Sportswear";
 import Cart from "./pages/Cart";
 import Product from "./pages/Product";
 import NotFound from "./pages/NotFound";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
+
 
 
 const queryClient = new QueryClient();
@@ -28,6 +31,8 @@ const App = () => (
           <Route path="/stationery" element={<Stationery />} />
           <Route path="/sportswear" element={<Sportswear />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/product/:id" element={<Product />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
