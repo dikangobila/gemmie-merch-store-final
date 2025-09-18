@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import db, { initializeDatabase, seedDatabase } from "./db";
+import db, { initializeDatabase, seedDatabase } from "./db.ts";
 
 const app = express();
 const PORT = 8080;
