@@ -124,7 +124,7 @@ const Cart = () => {
                   </div>
                   
                   {shipping === 0 && (
-                    <p className="text-sm text-primary">🎉 Free shipping on orders over R500!</p>
+                    <p className="text-sm text-primary">Free shipping on orders over R500!</p>
                   )}
                 </div>
                 
