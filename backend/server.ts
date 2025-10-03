@@ -15,13 +15,13 @@ const JWT_SECRET = "your-secret-key"; // In production, use environment variable
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:8080", // Frontend URL
+  origin: "http://localhost:5173", // Frontend URL
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(express.static(path.join(__dirname, "../gemmie-spu-shop/dist")));
+app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get("/api/health", (req, res) => {
   res.send("Backend API is running 🚀");
@@ -62,8 +62,8 @@ app.get("/api/products", async (req, res) => {
 });
 
 app.use((req, res) => {
-  res.sendFile(path.join(__filename, "index.html"));
-}); 
+  res.sendFile(path.join(__dirname, "../index.html"));
+});
 
 // Save an order
 app.post("/api/orders", async (req, res) => {
@@ -146,7 +146,7 @@ app.post("/api/auth/register", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Set to true in production with HTTPS
+      secure: false, // Set to true in production with HTTPS
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -188,7 +188,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Set to true in production with HTTPS
+      secure: false, // Set to true in production with HTTPS
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });

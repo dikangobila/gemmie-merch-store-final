@@ -3,7 +3,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 
 const db = open({
-  filename: "./gemmie_merch_store.db", // SQLite database file
+  filename: "../gemmie_merch_store.db", // SQLite database file
   driver: sqlite3.Database,
 });
 
