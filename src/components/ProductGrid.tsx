@@ -1,23 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProductCard, { Product } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Grid3X3, LayoutGrid } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-
+import { api } from "@/services/api";
 
 interface ProductGridProps {
-  products: Product[];
+  products?: Product[]; // Make optional
   title?: string;
   showFilters?: boolean;
 }
 
-const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) => {
+const ProductGrid = ({ products: initialProducts, title, showFilters = true }: ProductGridProps) => {
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialProducts);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { addToCart } = useCart();
+
+  // Fetch products if not provided
+  useEffect(() => {
+    if (!initialProducts) {
+      const fetchProducts = async () => {
+        try {
+          setLoading(true);
+          const data = await api.getProducts();
+          // Transform backend data to frontend format
+          const transformedProducts = data.map((item: any) => ({
+            id: item.id.toString(),
+            name: item.title, // Backend uses 'title', frontend uses 'name'
+            price: item.price,
+            image: item.image || "/assets/products/placeholder.png",
+            category: item.category || "uncategorized",
+            description: item.description,
+            rating: item.rating || 4.5
+          }));
+          setProducts(transformedProducts);
+        } catch (error) {
+          console.error("Failed to fetch products:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchProducts();
+    }
+  }, [initialProducts]);
 
   // Get unique categories
   const categories = ["all", ...Array.from(new Set(products.map(p => p.category)))];
@@ -41,9 +71,14 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
 
   const handleAddToCart = (product: Product) => {
     addToCart({ ...product, quantity: 1 });
+
+
     console.log("Added to cart:", product);
-    // Here you would typically dispatch to a cart context or state
   };
+
+  if (loading) {
+    return <div className="text-center py-16">Loading products...</div>;
+  }
 
   return (
     <section className="py-16 bg-background">
@@ -58,10 +93,9 @@ const ProductGrid = ({ products, title, showFilters = true }: ProductGridProps) 
               Discover our complete range of Sol Plaatje University merchandise, 
               from everyday apparel to corporate gifts and accessories.
             </p>
+
+
           </div>
-          
-
-
         )}
 
         {/* Filters and Controls */}

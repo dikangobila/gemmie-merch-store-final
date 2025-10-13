@@ -89,20 +89,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Optionally, fetch current user on mount to persist login
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/api/auth/profile", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
-      } catch {
-        // ignore errors
+  const fetchUser = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/me", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
       }
-    };
-    fetchUser();
+    } catch {
+      // ignore errors
+    }
+  };
+  fetchUser();
   }, []);
 
   return (

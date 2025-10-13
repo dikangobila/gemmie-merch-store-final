@@ -24,7 +24,7 @@ const LeisureWear = () => {
           </div>
         </div>
         <ProductGrid 
-          products={leisureProducts} 
+           
           title="Leisure Wear Collection"
           showFilters={true}
         />

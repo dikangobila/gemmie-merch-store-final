@@ -7,9 +7,10 @@ import { ShoppingCart, Search, Menu, User, Heart } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import { useCart } from "@/context/CartContext";
 
 const Header = () => {
-  const [cartItems, setCartItems] = useState(0);
+  const { cartItems } = useCart();
 
   const navigationItems = [
     { name: "Leisure Wear", href: "/leisure-wear" },
@@ -17,6 +18,7 @@ const Header = () => {
     { name: "Corporate Gifts", href: "/corporate-gifts" },
     { name: "Stationery & Accessories", href: "/stationery" },
     { name: "Sportswear & Activewear", href: "/sportswear" },
+    { name: "Admin", href: "/admin" },
   ];
 
   return (
@@ -69,9 +71,9 @@ const Header = () => {
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                {cartItems > 0 && (
+                {cartItems.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary">
-                    {cartItems}
+                    {cartItems.length}
                   </Badge>
                 )}
               </Button>

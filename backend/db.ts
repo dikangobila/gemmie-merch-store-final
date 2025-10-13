@@ -34,7 +34,8 @@ export const initializeDatabase = async () => {
       title TEXT,
       description TEXT,
       price REAL,
-      image TEXT
+      image TEXT,
+      category TEXT
 
       );
     CREATE TABLE IF NOT EXISTS orders (

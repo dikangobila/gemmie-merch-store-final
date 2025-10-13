@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
-import { products } from "@/data/products";
+
 
 const Index = () => {
   return (
@@ -11,7 +11,7 @@ const Index = () => {
       <main>
         <Hero />
         <ProductGrid 
-          products={products} 
+        
           title="Our Complete Collection"
           showFilters={true}
         />
