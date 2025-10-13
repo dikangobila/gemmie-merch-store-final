@@ -1,225 +1,189 @@
+// backend/server.ts
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import db, { initializeDatabase} from "./db.ts";
+
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
+import db, { initializeDatabase } from "./db.ts"; // we will improve db.ts path handling too
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = 8080;
-const JWT_SECRET = "your-secret-key"; // In production, use environment variable
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-this";
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // Frontend URL
+  origin: ["http://localhost:5173", "http://localhost:3000"], // add frontend origin(s) here
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(express.static(path.join(__dirname, "../dist")));
+// Utility: create token
+const createToken = (payload: object) => jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 
-app.get("/api/health", (req, res) => {
-  res.send("Backend API is running 🚀");
+// Initialize database
+(async () => {
+  await initializeDatabase();
+})().catch(err => {
+  console.error("Failed to initialize DB:", err);
+  process.exit(1);
 });
 
-// JWT Authentication Middleware
-const authenticateToken = (req: any, res: any, next: any) => {
-  const token = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: "Access denied" });
+// ---- AUTH ----
+// Register
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+    if (!email || !password) return res.status(400).json({ error: "Missing email or password" });
 
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) return res.status(403).json({ error: "Invalid token" });
-    req.user = user;
-    next();
-  });
-};
+    const database = await db;
+    const existing = await database.get("SELECT * FROM users WHERE email = ?", email);
+    if (existing) return res.status(409).json({ error: "User already exists" });
 
-// Initialize the database
-initializeDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-  });
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await database.run(
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      name || null,
+      email,
+      hashed
+    );
+    const userId = result.lastID;
+    const token = createToken({ id: userId, email });
+    res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+    res.json({ id: userId, email });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+
+
 });
 
 
+// Login
 
 
-// Fetch all products
+app.post("/api/auth/login", async (req, res) => {
+  try {
+
+    const { email, password } = req.body;
+    const database = await db;
+    const user = await database.get("SELECT * FROM users WHERE email = ?", email);
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+
+    const token = createToken({ id: user.id, email: user.email });
+    res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+    res.json({ id: user.id, email: user.email, name: user.name });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Get current user (profile)
+app.get("/api/auth/me", async (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+    const payload: any = jwt.verify(token, JWT_SECRET);
+    const database = await db;
+    const user = await database.get("SELECT id, name, email FROM users WHERE id = ?", payload.id);
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: "Invalid token" });
+  }
+});
+
+// Logout
+app.post("/api/auth/logout", (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
+});
+
+// ---- PRODUCTS ----
+// List products
 app.get("/api/products", async (req, res) => {
   try {
     const database = await db;
-    const products = await database.all("SELECT * FROM products");
+    const products = await database.all("SELECT * FROM products ORDER BY id DESC");
     res.json(products);
-  } catch (error) {
-    console.error("Error fetching products:", error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "../index.html"));
+// Get product by id
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const database = await db;
+    const product = await database.get("SELECT * FROM products WHERE id = ?", req.params.id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
 });
 
-// Save an order
+// Simple create product (for admin/dev)
+app.post("/api/products", async (req, res) => {
+  try {
+    const { title, description, price, image } = req.body;
+    const database = await db;
+    const r = await database.run(
+      "INSERT INTO products (title, description, price, image) VALUES (?, ?, ?, ?)",
+      title, description || "", price || 0, image || null
+    );
+    const id = r.lastID;
+    const product = await database.get("SELECT * FROM products WHERE id = ?", id);
+    res.json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create product" });
+  }
+});
+
+// ---- ORDERS (basic) ----
 app.post("/api/orders", async (req, res) => {
-  const { user_id, items, subtotal, shipping, total } = req.body;
-
-    console.log("Received order data:", req.body); // Log the incoming data
-
   try {
+    const { user_id, items } = req.body; // items: [{product_id, quantity, price}, ...]
+    if (!user_id || !items || !Array.isArray(items)) return res.status(400).json({ error: "Invalid payload" });
+
     const database = await db;
+    const total = items.reduce((s: number, it: any) => s + (Number(it.price) * Number(it.quantity)), 0);
 
-    // Insert the order
-    const result = await database.run(
-      "INSERT INTO orders (user_id, subtotal, shipping, total, created_at) VALUES (?, ?, ?, ?, ?)",
-      [user_id, subtotal, shipping, total]
-    );
-    console.log("Order inserted:", result);
-    const orderId = result.lastID;
+    const r = await database.run("INSERT INTO orders (user_id, total) VALUES (?, ?)", user_id, total);
+    const orderId = r.lastID;
 
-    // Insert the order items
-    for (const item of items) {
-      console.log("Inserting order item:", item);
-      await database.run(
-        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
-        [orderId, item.product_id, item.quantity, item.price]
-      );
+    const insertStmt = await database.prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+    for (const it of items) {
+      await insertStmt.run(orderId, it.product_id, it.quantity, it.price);
     }
+    await insertStmt.finalize();
 
-    res.status(201).json({ message: "Order saved successfully", orderId });
-  } catch (error) {
-    console.error("Error saving order:", error);
-    res.status(500).json({ error: "Failed to save the order" });
+    const order = await database.get("SELECT * FROM orders WHERE id = ?", orderId);
+    res.json({ orderId, order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create order" });
   }
 });
 
-// Fetch all orders
-app.get("/api/orders", async (req, res) => {
-  try {
-    const database = await db;
-    const orders = await database.all("SELECT * FROM orders");
-    res.json(orders);
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    res.status(500).json({ error: "Failed to fetch orders" });
-  }
+// Start
+app.listen(PORT, () => {
+  console.log(`Backend listening on http://localhost:${PORT}`);
+
+
 });
-
-// Authentication endpoints
-
-// Register new user
-app.post("/api/auth/register", async (req, res) => {
-  const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: "Name, email, and password are required" });
-  }
-
-  try {
-    const database = await db;
-
-    // Check if user already exists
-    const existingUser = await database.get("SELECT id FROM users WHERE email = ?", [email]);
-    if (existingUser) {
-      return res.status(400).json({ error: "User already exists" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert new user
-    const result = await database.run(
-      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-      [name, email, hashedPassword]
-    );
-
-    const userId = result.lastID;
-    const user = { id: userId, name, email };
-
-    // Generate JWT token
-    const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: "7d" });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.status(201).json({ user, token });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    res.status(500).json({ error: "Failed to register user" });
-  }
-});
-
-// Login user
-app.post("/api/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
-  }
-
-  try {
-    const database = await db;
-
-    // Find user by email
-    const user = await database.get("SELECT * FROM users WHERE email = ?", [email]);
-    if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
-
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
-
-    const userData = { id: user.id, name: user.name, email: user.email };
-
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.json({ user: userData, token });
-  } catch (error) {
-    console.error("Error logging in user:", error);
-    res.status(500).json({ error: "Failed to login" });
-  }
-});
-
-// Get user profile
-app.get("/api/auth/profile", authenticateToken, async (req: any, res) => {
-  try {
-    const database = await db;
-    const user = await database.get("SELECT id, name, email FROM users WHERE id = ?", [req.user.id]);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.json({ user });
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    res.status(500).json({ error: "Failed to fetch profile" });
-  }
-});
-
-// Logout user
-app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie("token");
-  res.json({ message: "Logged out successfully" });
-});
-
