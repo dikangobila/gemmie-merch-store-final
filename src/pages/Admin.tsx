@@ -15,7 +15,7 @@ const Admin = () => {
     image: "",
     category: ""
   });
-
+// categories for products
   const categories = [
     { value: "leisure", label: "Leisure Wear" },
     { value: "corporate", label: "Corporate Wear" },
