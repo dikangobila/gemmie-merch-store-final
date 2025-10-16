@@ -24,7 +24,7 @@ updates.forEach(update => {
   );
 });
 
-// Show results
+// Show the results
 db.all('SELECT id, title, image FROM products', (err: any, rows: any) => {
   if (err) {
     console.error('Error reading products:', err);
